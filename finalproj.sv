@@ -47,21 +47,21 @@ module finalproj (
 
 );
 
-	logic Reset_h, vssig, blank, sync, VGA_Clk;
+//	logic Reset_h, vssig, blank, sync, VGA_Clk;
 
 
 //=======================================================
 //  REG/WIRE declarations
 //=======================================================
 	logic SPI0_CS_N, SPI0_SCLK, SPI0_MISO, SPI0_MOSI, USB_GPX, USB_IRQ, USB_RST;
-	logic [3:0] hex_num_4, hex_num_3, hex_num_1, hex_num_0; //4 bit input hex digits
-	logic [1:0] signs;
-	logic [1:0] hundreds;
-	logic [7:0] Red, Blue, Green;
+//	logic [3:0] hex_num_4, hex_num_3, hex_num_1, hex_num_0; //4 bit input hex digits
+//	logic [1:0] signs;
+//	logic [1:0] hundreds;
+//	logic [7:0] Red, Blue, Green;
 	logic [7:0] keycode;
 	logic [1:0] AUD_MCLK_CTR; // counter for CODEC mclk
-	logic I2C_SCL, I2C_SDA, I2C_SCL_OE, I2C_SDA_OE;
-	logic I2S_SCLK, I2S_LRCLK, I2S_DOUT, I2S_DIN;
+	logic I2C_SCL, I2C_SDA, I2C_SCL_OE, I2C_SDA_OE; // I2C signals
+	logic I2S_SCLK, I2S_LRCLK, I2S_DOUT, I2S_DIN; // I2S signals
 
 //=======================================================
 //  Structural coding
@@ -75,20 +75,25 @@ module finalproj (
 			AUD_MCLK_CTR <= AUD_MCLK_CTR + 1;
 	end
 	
+	// used for I2S module
 	assign ARDUINO_IO[5] = 1'bZ;
 	assign I2S_SCLK = ARDUINO_IO[5];
 	assign ARDUINO_IO[4] = 1'bZ;
 	assign I2S_LRCLK = ARDUINO_IO[4];
 	assign ARDUINO_IO[1] = 1'bZ;
 	assign I2S_DOUT = ARDUINO_IO[1];
-	assign I2S_DIN = I2S_DOUT;
 	assign ARDUINO_IO[2] = I2S_DIN;
 	
+	// instantiate I2S module as audio processor
+	I2S audio (.*);
+	
+	// used for I2C interface i.e. SGTL5000
 	assign I2C_SCL = ARDUINO_IO[15];
 	assign I2C_SDA = ARDUINO_IO[14];
 	assign ARDUINO_IO[15] = I2C_SCL_OE ? 1'b0 : 1'bz;
 	assign ARDUINO_IO[14] = I2C_SDA_OE ? 1'b0 : 1'bz;
 	
+	// used for SPI interface i.e. keyboards
 	assign ARDUINO_IO[10] = SPI0_CS_N;
 	assign ARDUINO_IO[13] = SPI0_SCLK;
 	assign ARDUINO_IO[11] = SPI0_MOSI;
@@ -108,30 +113,30 @@ module finalproj (
 	assign ARDUINO_IO[6] = 1'b1;
 	
 	//HEX drivers to convert numbers to HEX output
-	HexDriver hex_driver4 (hex_num_4, HEX4[6:0]);
-	assign HEX4[7] = 1'b1;
-	
-	HexDriver hex_driver3 (hex_num_3, HEX3[6:0]);
-	assign HEX3[7] = 1'b1;
-	
-	HexDriver hex_driver1 (hex_num_1, HEX1[6:0]);
-	assign HEX1[7] = 1'b1;
-	
-	HexDriver hex_driver0 (hex_num_0, HEX0[6:0]);
-	assign HEX0[7] = 1'b1;
+	//	HexDriver hex_driver4 (hex_num_4, HEX4[6:0]);
+	//	assign HEX4[7] = 1'b1;
+	//	
+	//	HexDriver hex_driver3 (hex_num_3, HEX3[6:0]);
+	//	assign HEX3[7] = 1'b1;
+	//	
+	//	HexDriver hex_driver1 (hex_num_1, HEX1[6:0]);
+	//	assign HEX1[7] = 1'b1;
+	//	
+	//	HexDriver hex_driver0 (hex_num_0, HEX0[6:0]);
+	//	assign HEX0[7] = 1'b1;
 	
 	//fill in the hundreds digit as well as the negative sign
-	assign HEX5 = {1'b1, ~signs[1], 3'b111, ~hundreds[1], ~hundreds[1], 1'b1};
-	assign HEX2 = {1'b1, ~signs[0], 3'b111, ~hundreds[0], ~hundreds[0], 1'b1};
+	//	assign HEX5 = {1'b1, ~signs[1], 3'b111, ~hundreds[1], ~hundreds[1], 1'b1};
+	//	assign HEX2 = {1'b1, ~signs[0], 3'b111, ~hundreds[0], ~hundreds[0], 1'b1};
 	
 	
 	//Assign one button to reset
-	assign {Reset_h}=~ (KEY[0]);
+	//	assign {Reset_h}=~ (KEY[0]);
 
 	//Our A/D converter is only 12 bit
-	assign VGA_R = Red[7:4];
-	assign VGA_B = Blue[7:4];
-	assign VGA_G = Green[7:4];
+	//	assign VGA_R = Red[7:4];
+	//	assign VGA_B = Blue[7:4];
+	//	assign VGA_G = Green[7:4];
 
 	final_soc u0 (
 		.clk_clk                           (MAX10_CLK1_50),  //clk.clk
@@ -139,7 +144,7 @@ module finalproj (
 		.altpll_0_locked_conduit_export    (),               //altpll_0_locked_conduit.export
 		.altpll_0_phasedone_conduit_export (),               //altpll_0_phasedone_conduit.export
 		.altpll_0_areset_conduit_export    (),               //altpll_0_areset_conduit.export
-		.key_external_connection_export    (KEY),            //key_external_connection.export
+//		.key_external_connection_export    (KEY),            //key_external_connection.export
 
 		//SDRAM
 		.sdram_clk_clk(DRAM_CLK),                            //clk_sdram.clk
@@ -165,8 +170,8 @@ module finalproj (
 		.usb_gpx_export(USB_GPX),
 		
 		//LEDs and HEX
-		.hex_digits_export({hex_num_4, hex_num_3, hex_num_1, hex_num_0}),
-		.leds_export({hundreds, signs, LEDR}),
+//		.hex_digits_export({hex_num_4, hex_num_3, hex_num_1, hex_num_0}),
+//		.leds_export({hundreds, signs, LEDR}),
 		.keycode_export(keycode),
 		
 		//I2C
