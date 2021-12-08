@@ -64,84 +64,84 @@ BYTE GetDriverandReport() {
 	return device;
 }
 
-void setLED(int LED)
-{
-	IOWR_ALTERA_AVALON_PIO_DATA(LEDS_PIO_BASE, (IORD_ALTERA_AVALON_PIO_DATA(LEDS_PIO_BASE) | (0x001 << LED)));
-}
-
-void clearLED(int LED)
-{
-	IOWR_ALTERA_AVALON_PIO_DATA(LEDS_PIO_BASE, (IORD_ALTERA_AVALON_PIO_DATA(LEDS_PIO_BASE) & ~(0x001 << LED)));
-
-}
-
-void printSignedHex0(signed char value)
-{
-	BYTE tens = 0;
-	BYTE ones = 0;
-	WORD pio_val = IORD_ALTERA_AVALON_PIO_DATA(HEX_DIGITS_PIO_BASE);
-	if (value < 0)
-	{
-		setLED(11);
-		value = -value;
-	}
-	else
-	{
-		clearLED(11);
-	}
-	//handled hundreds
-	if (value / 100)
-		setLED(13);
-	else
-		clearLED(13);
-
-	value = value % 100;
-	tens = value / 10;
-	ones = value % 10;
-
-	pio_val &= 0x00FF;
-	pio_val |= (tens << 12);
-	pio_val |= (ones << 8);
-
-	IOWR_ALTERA_AVALON_PIO_DATA(HEX_DIGITS_PIO_BASE, pio_val);
-}
-
-void printSignedHex1(signed char value)
-{
-	BYTE tens = 0;
-	BYTE ones = 0;
-	DWORD pio_val = IORD_ALTERA_AVALON_PIO_DATA(HEX_DIGITS_PIO_BASE);
-	if (value < 0)
-	{
-		setLED(10);
-		value = -value;
-	}
-	else
-	{
-		clearLED(10);
-	}
-	//handled hundreds
-	if (value / 100)
-		setLED(12);
-	else
-		clearLED(12);
-
-	value = value % 100;
-	tens = value / 10;
-	ones = value % 10;
-	tens = value / 10;
-	ones = value % 10;
-
-	pio_val &= 0xFF00;
-	pio_val |= (tens << 4);
-	pio_val |= (ones << 0);
-
-	IOWR_ALTERA_AVALON_PIO_DATA(HEX_DIGITS_PIO_BASE, pio_val);
-}
+//void setLED(int LED)
+//{
+//	IOWR_ALTERA_AVALON_PIO_DATA(LEDS_PIO_BASE, (IORD_ALTERA_AVALON_PIO_DATA(LEDS_PIO_BASE) | (0x001 << LED)));
+//}
+//
+//void clearLED(int LED)
+//{
+//	IOWR_ALTERA_AVALON_PIO_DATA(LEDS_PIO_BASE, (IORD_ALTERA_AVALON_PIO_DATA(LEDS_PIO_BASE) & ~(0x001 << LED)));
+//
+//}
+//
+//void printSignedHex0(signed char value)
+//{
+//	BYTE tens = 0;
+//	BYTE ones = 0;
+//	WORD pio_val = IORD_ALTERA_AVALON_PIO_DATA(HEX_DIGITS_PIO_BASE);
+//	if (value < 0)
+//	{
+//		setLED(11);
+//		value = -value;
+//	}
+//	else
+//	{
+//		clearLED(11);
+//	}
+//	//handled hundreds
+//	if (value / 100)
+//		setLED(13);
+//	else
+//		clearLED(13);
+//
+//	value = value % 100;
+//	tens = value / 10;
+//	ones = value % 10;
+//
+//	pio_val &= 0x00FF;
+//	pio_val |= (tens << 12);
+//	pio_val |= (ones << 8);
+//
+//	IOWR_ALTERA_AVALON_PIO_DATA(HEX_DIGITS_PIO_BASE, pio_val);
+//}
+//
+//void printSignedHex1(signed char value)
+//{
+//	BYTE tens = 0;
+//	BYTE ones = 0;
+//	DWORD pio_val = IORD_ALTERA_AVALON_PIO_DATA(HEX_DIGITS_PIO_BASE);
+//	if (value < 0)
+//	{
+//		setLED(10);
+//		value = -value;
+//	}
+//	else
+//	{
+//		clearLED(10);
+//	}
+//	//handled hundreds
+//	if (value / 100)
+//		setLED(12);
+//	else
+//		clearLED(12);
+//
+//	value = value % 100;
+//	tens = value / 10;
+//	ones = value % 10;
+//	tens = value / 10;
+//	ones = value % 10;
+//
+//	pio_val &= 0xFF00;
+//	pio_val |= (tens << 4);
+//	pio_val |= (ones << 0);
+//
+//	IOWR_ALTERA_AVALON_PIO_DATA(HEX_DIGITS_PIO_BASE, pio_val);
+//}
 
 void setKeycode(WORD keycode)
 {
-	IOWR_ALTERA_AVALON_PIO_DATA(0x000100, keycode); // DEBUG: Changed fixed base address to address assigned to keycode on plat designer
+	IOWR_ALTERA_AVALON_PIO_DATA(KEYCODE_BASE, keycode); // DEBUG: Changed fixed base address to address assigned to keycode on plat designer
 }
 
 
@@ -206,13 +206,20 @@ int main()
 	printf( "CHIP_CLK_CTRL register: %x\n", SGTL5000_Reg_Rd (i2c_dev, SGTL5000_CHIP_CLK_CTRL));
 
 	//Set as I2S master
-	SGTL5000_Reg_Wr(i2c_dev, SGTL5000_CHIP_I2S_CTRL, SGTL5000_I2S_MASTER);
+	SGTL5000_Reg_Wr(i2c_dev, SGTL5000_CHIP_I2S_CTRL, \
+			SGTL5000_I2S_MASTER);
 	printf( "CHIP_I2S_CTRL register: %x\n", SGTL5000_Reg_Rd (i2c_dev, SGTL5000_CHIP_I2S_CTRL));
 
 	//ADC input from Line
 	SGTL5000_Reg_Wr(i2c_dev, SGTL5000_CHIP_ANA_CTRL, \
-			SGTL5000_ADC_SEL_LINE_IN << SGTL5000_ADC_SEL_SHIFT);
+			SGTL5000_ADC_SEL_MIC << SGTL5000_ADC_SEL_SHIFT);
 	printf( "CHIP_ANA_CTRL register: %x\n", SGTL5000_Reg_Rd (i2c_dev, SGTL5000_CHIP_ANA_CTRL));
+
+	SGTL5000_Reg_Wr(i2c_dev, SGTL5000_CHIP_MIC_CTRL, \
+			SGTL5000_BIAS_R_2k << SGTL5000_BIAS_R_SHIFT |
+			0x7 << SGTL5000_BIAS_VOLT_SHIFT |
+			0x3 << SGTL5000_MIC_GAIN_SHIFT);
+	printf( "CHIP_MIC_CTRL register: %x\n", SGTL5000_Reg_Rd (i2c_dev, SGTL5000_CHIP_MIC_CTRL));
 
 	//ADC -> I2S out, I2S in -> DAC
 	SGTL5000_Reg_Wr(i2c_dev, SGTL5000_CHIP_SSS_CTRL, \
@@ -235,6 +242,7 @@ int main()
 	BYTE errorflag = 0; //flag once we get an error device so we don't keep dumping out state info
 	BYTE device;
 	WORD keycode;
+	BYTE keycode_out[4];
 
 	printf("initializing MAX3421E...\n");
 	MAX3421E_init();
@@ -248,7 +256,7 @@ int main()
 		if (GetUsbTaskState() == USB_STATE_RUNNING) {
 			if (!runningdebugflag) {
 				runningdebugflag = 1;
-				setLED(9);
+//				setLED(9);
 				device = GetDriverandReport();
 			} else if (device == 1) {
 				//run keyboard debug polling
@@ -260,13 +268,49 @@ int main()
 					printf("%x \n", rcode);
 					continue;
 				}
-				printf("keycodes: ");
-				for (int i = 0; i < 6; i++) {
-					printf("%x ", kbdbuf.keycode[i]);
+
+
+				if (kbdbuf.keycode[0] == 0) {
+					if (kbdbuf.keycode[1] != 0) {
+						keycode_out[0] = kbdbuf.keycode[1];
+						keycode_out[1] = kbdbuf.keycode[1];
+						if (kbdbuf.keycode[2] == 0) {
+							keycode_out[2] = kbdbuf.keycode[1];
+						} else {
+							keycode_out[2] = kbdbuf.keycode[2];
+						}
+						if (kbdbuf.keycode[3] == 0) {
+							keycode_out[3] = kbdbuf.keycode[1];
+						} else {
+							keycode_out[3] = kbdbuf.keycode[3];
+						}
+					}
+				} else {
+					keycode_out[0] = kbdbuf.keycode[0];
+					if (kbdbuf.keycode[1] == 0) {
+						keycode_out[1] = kbdbuf.keycode[0];
+					} else {
+						keycode_out[1] = kbdbuf.keycode[1];
+					}
+					if (kbdbuf.keycode[2] == 0) {
+						keycode_out[2] = kbdbuf.keycode[0];
+					} else {
+						keycode_out[2] = kbdbuf.keycode[2];
+					}
+					if (kbdbuf.keycode[3] == 0) {
+						keycode_out[3] = kbdbuf.keycode[0];
+					} else {
+						keycode_out[3] = kbdbuf.keycode[3];
+					}
 				}
-				setKeycode(kbdbuf.keycode[0]);
-				printSignedHex0(kbdbuf.keycode[0]);
-				printSignedHex1(kbdbuf.keycode[1]);
+
+				printf("keycodes: ");
+				for (int i = 0; i < 4; i++) {
+					printf("%x ", keycode_out[i]);
+				}
+				setKeycode(keycode_out[0] << 24 | keycode_out[1] << 16 | keycode_out[2] << 8 | keycode_out[3]);
+//				printSignedHex0(kbdbuf.keycode[0]);
+//				printSignedHex1(kbdbuf.keycode[1]);
 				printf("\n");
 			}
 
@@ -282,29 +326,29 @@ int main()
 				}
 				printf("X displacement: ");
 				printf("%d ", (signed char) buf.Xdispl);
-				printSignedHex0((signed char) buf.Xdispl);
+//				printSignedHex0((signed char) buf.Xdispl);
 				printf("Y displacement: ");
 				printf("%d ", (signed char) buf.Ydispl);
-				printSignedHex1((signed char) buf.Ydispl);
+//				printSignedHex1((signed char) buf.Ydispl);
 				printf("Buttons: ");
 				printf("%x\n", buf.button);
-				if (buf.button & 0x04)
-					setLED(2);
-				else
-					clearLED(2);
-				if (buf.button & 0x02)
-					setLED(1);
-				else
-					clearLED(1);
-				if (buf.button & 0x01)
-					setLED(0);
-				else
-					clearLED(0);
+//				if (buf.button & 0x04)
+//					setLED(2);
+//				else
+//					clearLED(2);
+//				if (buf.button & 0x02)
+//					setLED(1);
+//				else
+//					clearLED(1);
+//				if (buf.button & 0x01)
+//					setLED(0);
+//				else
+//					clearLED(0);
 			}
 		} else if (GetUsbTaskState() == USB_STATE_ERROR) {
 			if (!errorflag) {
 				errorflag = 1;
-				clearLED(9);
+//				clearLED(9);
 				printf("USB Error State\n");
 				//print out string descriptor here
 			}
@@ -319,7 +363,7 @@ int main()
 				USB_init();
 			}
 			errorflag = 0;
-			clearLED(9);
+//			clearLED(9);
 		}
 
 	}
