@@ -58,10 +58,18 @@ module finalproj (
 //	logic [1:0] signs;
 //	logic [1:0] hundreds;
 //	logic [7:0] Red, Blue, Green;
-	logic [7:0] keycode;
+	logic [31:0] keycode;
 	logic [1:0] AUD_MCLK_CTR; // counter for CODEC mclk
 	logic I2C_SCL, I2C_SDA, I2C_SCL_OE, I2C_SDA_OE; // I2C signals
 	logic I2S_SCLK, I2S_LRCLK, I2S_DOUT, I2S_DIN; // I2S signals
+	// ADC Logic
+	logic [4:0] cmd_ch; 		// Input: ADC Command channels, determine output
+	logic [4:0] res_ch;
+	logic [11:0] res_data; // Output: ADC outputs
+	logic res_valid;
+	logic [11:0] adc_data;
+	logic [4:0] adc_ch;
+	logic [12:0] vol; //Debug
 
 //=======================================================
 //  Structural coding
@@ -138,6 +146,20 @@ module finalproj (
 	//	assign VGA_B = Blue[7:4];
 	//	assign VGA_G = Green[7:4];
 
+	// ADC Implementation
+	always @ (posedge MAX10_CLK1_50)
+	begin
+		if (res_valid)
+		begin
+			adc_data <= res_data;
+			adc_ch <= res_ch;
+			
+			vol <= res_data * 2 * 2500 / 4095;
+		end
+	end	
+	assign LEDR[9:0] = vol[12:3];
+	assign cmd_ch = 4'b0001;
+	
 	final_soc u0 (
 		.clk_clk                           (MAX10_CLK1_50),  //clk.clk
 		.reset_reset_n                     (1'b1),           //reset.reset_n
@@ -158,6 +180,18 @@ module finalproj (
 		.sdram_wire_ras_n(DRAM_RAS_N),                       //.ras_n
 		.sdram_wire_we_n(DRAM_WE_N),                         //.we_n
 
+		//ADC
+		.modular_adc_0_command_valid(1'b1),          		// modular_adc_0_command.valid
+		.modular_adc_0_command_channel(cmd_ch),        		// .channel
+		.modular_adc_0_command_startofpacket(1'b1),  		// .startofpacket
+		.modular_adc_0_command_endofpacket(1'b1),    		// .endofpacket
+		.modular_adc_0_command_ready(),          		// .ready
+		.modular_adc_0_response_valid(res_valid),         	//modular_adc_0_response.valid
+		.modular_adc_0_response_channel(res_ch),       		//                             .channel
+		.modular_adc_0_response_data(res_data),          	//                             .data
+		.modular_adc_0_response_startofpacket(1'b1), //                             .startofpacket
+		.modular_adc_0_response_endofpacket(1'b1),   //    
+		
 		//USB SPI	
 		.spi0_SS_n(SPI0_CS_N),
 		.spi0_MOSI(SPI0_MOSI),
