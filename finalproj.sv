@@ -146,19 +146,22 @@ module finalproj (
 	//	assign VGA_B = Blue[7:4];
 	//	assign VGA_G = Green[7:4];
 
-	// ADC Implementation
-	always @ (posedge MAX10_CLK1_50)
-	begin
-		if (res_valid)
-		begin
-			adc_data <= res_data;
-			adc_ch <= res_ch;
+	// ADC Debug
+// 	always @ (posedge MAX10_CLK1_50)
+// 	begin
+// 		if (res_valid)
+// 		begin
+// 			adc_data <= res_data;
+// 			adc_ch <= res_ch;
 			
-			vol <= res_data * 2 * 2500 / 4095;
-		end
-	end	
-	assign LEDR[9:0] = vol[12:3];
+// 			//vol <= res_data * 2 * 2500 / 4095;
+// 		end
+// 	end	
+	//assign LEDR[9:0] = vol[12:3];
 	assign cmd_ch = 4'b0001;
+	
+	//Debug HEX
+	
 	
 	final_soc u0 (
 		.clk_clk                           (MAX10_CLK1_50),  //clk.clk
@@ -191,6 +194,7 @@ module finalproj (
 		.modular_adc_0_response_data(res_data),          	//                             .data
 		.modular_adc_0_response_startofpacket(1'b1), //                             .startofpacket
 		.modular_adc_0_response_endofpacket(1'b1),   //    
+		.adc_data_export(res_data),
 		
 		//USB SPI	
 		.spi0_SS_n(SPI0_CS_N),
