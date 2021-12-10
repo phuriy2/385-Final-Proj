@@ -216,7 +216,7 @@ int main()
 	printf( "CHIP_ANA_CTRL register: %x\n", SGTL5000_Reg_Rd (i2c_dev, SGTL5000_CHIP_ANA_CTRL));
 
 	SGTL5000_Reg_Wr(i2c_dev, SGTL5000_CHIP_MIC_CTRL, \
-			SGTL5000_BIAS_R_2k << SGTL5000_BIAS_R_SHIFT |
+			SGTL5000_BIAS_R_2K << SGTL5000_BIAS_R_SHIFT |
 			0x7 << SGTL5000_BIAS_VOLT_SHIFT |
 			0x3 << SGTL5000_MIC_GAIN_SHIFT);
 	printf( "CHIP_MIC_CTRL register: %x\n", SGTL5000_Reg_Rd (i2c_dev, SGTL5000_CHIP_MIC_CTRL));
@@ -248,7 +248,53 @@ int main()
 	MAX3421E_init();
 	printf("initializing USB...\n");
 	USB_init();
+	volatile unsigned int *ADC_PIO = (unsigned int*)0x040011b0;
+	volatile unsigned int *HEX_PIO = (unsigned int*)0x040011c0;
+	unsigned int vol = 0x40; // Register CHIP_ANA_HP_CTRL 0x0022
+	// (Minimum 0x7E, Mid 0x40, Maximum 0x00)
+	// Baseline ADC: 800-900 range
+	//unsigned int bass;
+
+	/*
+	//enable core modules
+	SGTL5000_Reg_Wr(i2c_dev, SGTL5000_CHIP_DIG_POWER,\
+			SGTL5000_ADC_EN|
+			SGTL5000_DAC_EN|
+			//SGTL5000_DAP_POWERUP| //disable digital audio processor in CODEC
+			SGTL5000_I2S_OUT_POWERUP|
+			SGTL5000_I2S_IN_POWERUP);
+	printf( "CHIP_DIG_POWER register: %x\n", SGTL5000_Reg_Rd (i2c_dev, SGTL5000_CHIP_DIG_POWER));
+	*/
+
+	// ZCD prevents popping
+	SGTL5000_Reg_Wr(i2c_dev, SGTL5000_CHIP_ANA_CTRL, SGTL5000_HP_ZCD_EN);
+	SGTL5000_Reg_Wr(i2c_dev, SGTL5000_CHIP_ANA_CTRL, SGTL5000_ADC_ZCD_EN);
+
 	while (1) {
+
+		// Effects Control
+		if(*ADC_PIO > 1000) {
+			if (vol > 0x4) {
+				vol -= 0x4;
+			}
+		}
+		else if (*ADC_PIO < 700) {
+			if (vol < 0x78) {
+				vol += 0x4;
+			}
+		}
+		SGTL5000_Reg_Wr(i2c_dev, SGTL5000_CHIP_ANA_HP_CTRL, \
+				vol << SGTL5000_HP_VOL_RIGHT_SHIFT);
+		SGTL5000_Reg_Wr(i2c_dev, SGTL5000_CHIP_ANA_HP_CTRL, \
+				vol << SGTL5000_HP_VOL_LEFT_SHIFT);
+
+		printf("ADC Output: ");
+		printf("%u \n", *ADC_PIO);
+		printf("Volume: ");
+		printf("%u \n", vol);
+
+
+		// USB Test
 		printf(".");
 		MAX3421E_Task();
 		USB_Task();
