@@ -248,23 +248,16 @@ int main()
 	MAX3421E_init();
 	printf("initializing USB...\n");
 	USB_init();
-	volatile unsigned int *ADC_PIO = (unsigned int*)0x040011b0;
-	volatile unsigned int *HEX_PIO = (unsigned int*)0x040011c0;
-	unsigned int vol = 0x40; // Register CHIP_ANA_HP_CTRL 0x0022
-	// (Minimum 0x7E, Mid 0x40, Maximum 0x00)
-	// Baseline ADC: 800-900 range
-	//unsigned int bass;
-
-	/*
-	//enable core modules
-	SGTL5000_Reg_Wr(i2c_dev, SGTL5000_CHIP_DIG_POWER,\
-			SGTL5000_ADC_EN|
-			SGTL5000_DAC_EN|
-			//SGTL5000_DAP_POWERUP| //disable digital audio processor in CODEC
-			SGTL5000_I2S_OUT_POWERUP|
-			SGTL5000_I2S_IN_POWERUP);
-	printf( "CHIP_DIG_POWER register: %x\n", SGTL5000_Reg_Rd (i2c_dev, SGTL5000_CHIP_DIG_POWER));
-	*/
+	
+	//========================================================
+	// AUDIO IMPLEMENTATIOn
+	//========================================================
+	
+	volatile unsigned int *ADC_PIO = (unsigned int*)0x040011e0; // Baseline ADC: 800-900 range
+	volatile unsigned int *HEX_PIO = (unsigned int*)0x040011d0;
+	//volatile unsigned int *SW_PIO = (unsigned int*) 0x040011c0; // Switch PIO (Comment out if unused)
+	unsigned int vol = 0x40; // (Minimum 0x7E, Mid 0x40, Maximum 0x00)
+	//unsigned int bass = 0x0;
 
 	// ZCD prevents popping
 	SGTL5000_Reg_Wr(i2c_dev, SGTL5000_CHIP_ANA_CTRL, SGTL5000_HP_ZCD_EN);
@@ -293,6 +286,9 @@ int main()
 		printf("Volume: ");
 		printf("%u \n", vol);
 
+	//========================================================
+	// END OF AUDIO IMPLEMENTATIOn
+	//========================================================
 
 		// USB Test
 		printf(".");
